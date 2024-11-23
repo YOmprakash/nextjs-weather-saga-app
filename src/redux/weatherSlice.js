@@ -10,14 +10,18 @@ const weatherSlice = createSlice({
   reducers: {
     fetchWeather: (state, action) => {
       state.loading = true;
+      state.error = null;
+      
     },
     fetchWeatherSuccess: (state, action) => {
       state.loading = false;
       state.data = action.payload;
+      state.error = null;
     },
     fetchWeatherFailure: (state, action) => {
       state.loading = false;
       state.error = action.payload;
+      state.data = null;
     },
   },
 });

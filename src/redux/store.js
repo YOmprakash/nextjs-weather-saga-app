@@ -12,7 +12,7 @@ const store = configureStore({
     weather: weatherReducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(sagaMiddleware), // Add saga middleware
+    getDefaultMiddleware().concat(sagaMiddleware), 
 });
 
 // Run the saga

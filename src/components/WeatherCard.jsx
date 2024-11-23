@@ -1,23 +1,49 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchWeather } from '../redux/weatherSlice';
+import { fetchWeather, fetchWeatherFailure } from '../redux/weatherSlice';
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress"
+import { Progress } from "@/components/ui/progress";
 
 const WeatherCard = () => {
   const [city, setCity] = useState('');
+  const [debouncedCity, setDebouncedCity] = useState('');
   const dispatch = useDispatch();
   const { loading, data, error } = useSelector((state) => state.weather);
+
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedCity(city);
+    }, 500); 
+
+    return () => clearTimeout(timer); 
+  }, [city]);
+
+  
+  useEffect(() => {
+    if (debouncedCity.trim() !== '') {
+      dispatch(fetchWeather({ city: debouncedCity }));
+      console.log(`Debounced city ready: ${debouncedCity}`);
+      
+    }
+  }, [debouncedCity, dispatch]);
 
   const handleSearch = () => {
     if (city.trim() !== '') {
       dispatch(fetchWeather({ city }));
+      setCity(''); 
     }
-    setCity('');
+  };
+
+  const handleInputChange = (e) => {
+    setCity(e.target.value);
+    if (error) {
+      dispatch(fetchWeatherFailure(null)); 
+    }
   };
 
   return (
@@ -30,7 +56,7 @@ const WeatherCard = () => {
           <Input
             placeholder="Enter city name"
             value={city}
-            onChange={(e) => setCity(e.target.value)}
+            onChange={handleInputChange}
             className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
           <Button
@@ -42,16 +68,16 @@ const WeatherCard = () => {
         </div>
         {loading && (
           <div className="my-4">
-            <Progress className="w-full" value={33} />
+            <Progress className="w-full" value={50} />
           </div>
         )}
-        {error && <p className="text-center text-red-500">{error}</p>}
+        {error && <p className="text-center text-red-500">No Result Found</p>}
         {data && (
           <div className="mt-4 text-center">
             <img
               src={`https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`}
               alt="Weather Icon"
-              className="mx-auto mb-2"
+              className="block mx-auto mb-2"
             />
             <h2 className="text-xl font-bold text-indigo-700">{data.name}</h2>
             <p className="text-gray-700 capitalize">{data.weather[0].description}</p>
